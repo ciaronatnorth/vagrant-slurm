@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   #config.vm.box = "rockylinux/8"
   config.vm.box = "generic/rocky8"
 
-  config.vm.synced_folder "../rundata", "/rundata"
+  config.vm.synced_folder "../rundata", "/rundata", type: "nfs"
 
   config.vm.define "controller" do |machine|
     machine.vm.hostname = "controller"
