@@ -1,0 +1,151 @@
+- hosts: all
+  become: yes
+
+  vars_files:
+    - group_vars/all
+
+  tasks:
+    - name: ohpc1 install OpenHPC
+      yum:
+        name: "http://repos.openhpc.community/OpenHPC/2/EL_8/x86_64/ohpc-release-2-1.el8.x86_64.rpm"
+        disable_gpg_check: True
+
+    - name: ohpc2 install dnf-plugins-core
+      yum:
+        name: dnf-plugins-core
+
+    - name: ohpc3 enable powertools
+      shell: 'yum config-manager --set-enabled powertools'
+      args:
+        warn: false
+
+    - name: install tools
+      yum:
+        name: tmux
+
+- hosts: controller
+  become: yes
+
+  tasks:
+    - name: install ohpc-base plus ohpc-slurm-server and mariadb
+      yum:
+        name: 
+          - ohpc-base
+          - ohpc-slurm-server
+          - mariadb-server 
+          - mariadb-devel
+
+    - name: start MariaDB
+      service:
+        name: mariadb.service
+        enabled: true
+        state: started
+
+    - name: initialise slurm_acct_db with mysql commands _copy file_ 
+      copy:
+        src: templates/mysql_cmds
+        dest: /tmp/mysql_cmds
+
+    # initialise database. Fails if the DB already exists - use -f to ignore errors and continue
+    - name: initialise slurm_acct_db with mysql command _execute_
+      shell: 'mysql -f < /tmp/mysql_cmds' 
+
+    - name: Transfer Munge key
+      copy:
+        src: templates/munge.key
+        dest: /etc/munge/munge.key
+        owner: munge
+        group: munge
+        mode: '0400'
+
+    - name: Start Munge
+      service:
+        name: munge.service
+        enabled: true
+        state: started
+
+    - name: Open all ports in private IP range.
+      #shell: 'firewall-cmd --add-port=6817/tcp --permanent; firewall-cmd --reload'
+      shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
+
+    - name: template slurm.conf to controller
+      template:                         # Ansible template module
+        src: "slurm.conf.j2"            # template src i.e source location 
+        dest: "/etc/slurm/slurm.conf"   # Destination location
+
+    - name: template cgroup.conf to controller
+      template:                         # Ansible template module
+        src: "cgroup.conf.j2"            # template src i.e source location 
+        dest: "/etc/slurm/cgroup.conf"   # Destination location
+
+    - name: template slurmdbd.conf to controller
+      template:
+        src: "slurmdbd.conf.j2"
+        dest: "/etc/slurm/slurmdbd.conf"
+        owner: slurm
+        group: slurm
+        mode: '0600'
+
+    - name: Start slurmdbd service
+      service:
+        name: slurmdbd.service
+        enabled: true
+        state: started
+
+    - name: wait for slurmdbd to be fully up
+      pause:
+        seconds: 5
+
+    - name: Start service slurmctld
+      service:
+        name: slurmctld.service
+        enabled: true
+        state: started
+
+    - name: check if cluster registered already
+      shell: 'sacctmgr list cluster --noheader format=cluster'
+      register: cluster_name
+
+    - name: add cluster to SlurmDB via sacctmgr
+      shell: 'sacctmgr -i add cluster mycluster'
+      when: cluster_name.stdout == ""
+
+- hosts: computes
+  become: yes
+
+  tasks:
+    - name: install ohpc-base and ohpc-slurm-client
+      yum:
+        name: 
+          - ohpc-base-compute
+          - ohpc-slurm-client
+
+    - name: Open all ports in this IP range. Was open the firewall for slurmd port 6818
+      #shell: 'firewall-cmd --add-port=6818/tcp --permanent; firewall-cmd --reload'
+      shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
+
+    - name: Transfer munge key
+      copy:
+        src: templates/munge.key
+        dest: /etc/munge/munge.key
+        owner: munge
+        group: munge
+        mode: '0400'
+
+    - name: Start Munge
+      service:
+        name: munge.service
+        enabled: true
+        state: started
+
+    - name: copy slurmd environment vars (to sysconfig, used in .service file)
+      copy:
+        src: templates/sysconfig_slurmd
+        dest: /etc/sysconfig/slurmd
+
+    - name: Start service slurmd, if not started
+      service:
+        name: slurmd.service
+        enabled: true
+        state: started
+
