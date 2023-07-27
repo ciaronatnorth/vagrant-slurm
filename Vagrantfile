@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   #config.vm.box = "rockylinux/8"
   config.vm.box = "generic/rocky8"
 
-  config.vm.synced_folder "../rundata", "/rundata", type: "nfs"
+  config.vm.synced_folder "./shared", "/shared", type: "nfs"
 
   config.vm.define "controller" do |machine|
     machine.vm.hostname = "controller"
@@ -48,11 +48,11 @@ Vagrant.configure("2") do |config|
       machine.vm.network "private_network", ip: "192.168.56.#{i+3}", hostname: true
       machine.vm.provider :libvirt do |libvirt|
         libvirt.cpus = COMPUTE_CORES
-        libvirt.memory = 512
+        libvirt.memory = 1024
         libvirt.cputopology :sockets => COMPUTE_SOCKETS, :cores => COMPUTE_CORES_PER_SOCKET, :threads => '1'
         libvirt.numa_nodes = [
-          {:cpus => NUMA_DOMAIN_1, :memory => "256"},
-          {:cpus => NUMA_DOMAIN_2, :memory => "256"}
+          {:cpus => NUMA_DOMAIN_1, :memory => "512"},
+          {:cpus => NUMA_DOMAIN_2, :memory => "512"}
         ]
       end
     end
