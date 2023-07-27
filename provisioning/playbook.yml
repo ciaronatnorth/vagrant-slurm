@@ -21,7 +21,10 @@
 
     - name: install tools
       yum:
-        name: tmux
+        name: 
+          - tmux
+          - htop
+          - hwloc # provides lstopo-no-graphics
 
 - hosts: controller
   become: yes
@@ -103,8 +106,12 @@
         state: started
 
     - name: check if cluster registered already
-      shell: 'sacctmgr list cluster --noheader format=cluster'
+      command: 'sacctmgr list cluster --noheader format=cluster'
       register: cluster_name
+
+    - name: print cluster_name
+      debug:
+        msg: Got Cluster name {{ cluster_name }}
 
     - name: add cluster to SlurmDB via sacctmgr
       shell: 'sacctmgr -i add cluster mycluster'
