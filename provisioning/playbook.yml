@@ -5,6 +5,12 @@
     - group_vars/all
 
   tasks:
+    - name: set PS1 prompt (for colour)
+      #become: no
+      shell: 
+        cmd: |
+          echo "export PS1=\"\[\e]0;\u@\h: \w\a\]\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ \"" >> /home/vagrant/.bashrc
+
     - name: ohpc1 install OpenHPC
       yum:
         name: "http://repos.openhpc.community/OpenHPC/2/EL_8/x86_64/ohpc-release-2-1.el8.x86_64.rpm"
@@ -25,6 +31,12 @@
           - tmux
           - htop
           - hwloc # provides lstopo-no-graphics
+          - numactl 
+
+    - name: uninstall firewalld
+      yum:
+        name: firewalld
+        state: absent
 
 - hosts: controller
   become: yes
@@ -35,6 +47,8 @@
         name: 
           - ohpc-base
           - ohpc-slurm-server
+          - openmpi4-gnu12-ohpc # OpenMPI doesn't work with Slurm PMIx
+          #- mpich-ucx-gnu12-ohpc
           - mariadb-server 
           - mariadb-devel
 
@@ -67,9 +81,9 @@
         enabled: true
         state: started
 
-    - name: Open all ports in private IP range.
-      #shell: 'firewall-cmd --add-port=6817/tcp --permanent; firewall-cmd --reload'
-      shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
+    #- name: Open all ports in private IP range.
+      ##shell: 'firewall-cmd --add-port=6817/tcp --permanent; firewall-cmd --reload'
+      #shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
 
     - name: template slurm.conf to controller
       template:                         # Ansible template module
@@ -124,12 +138,15 @@
     - name: install ohpc-base and ohpc-slurm-client
       yum:
         name: 
+          - ohpc-base
           - ohpc-base-compute
           - ohpc-slurm-client
+          - openmpi4-gnu12-ohpc # OpenMPI doesn't work with Slurm PMIx
+            #- mpich-ucx-gnu12-ohpc
 
-    - name: Open all ports in this IP range. Was open the firewall for slurmd port 6818
-      #shell: 'firewall-cmd --add-port=6818/tcp --permanent; firewall-cmd --reload'
-      shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
+    #- name: Open all ports in this IP range. Was open the firewall for slurmd port 6818
+      ##shell: 'firewall-cmd --add-port=6818/tcp --permanent; firewall-cmd --reload'
+      #shell: 'firewall-cmd --zone=trusted --add-source=192.168.56.0/24 --permanent; firewall-cmd --reload'
 
     - name: Transfer munge key
       copy:
