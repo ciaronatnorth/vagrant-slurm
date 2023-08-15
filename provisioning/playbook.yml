@@ -32,6 +32,7 @@
           - htop
           - hwloc # provides lstopo-no-graphics
           - numactl 
+          - perf
 
     - name: uninstall firewalld
       yum:
@@ -48,7 +49,7 @@
           - ohpc-base
           - ohpc-slurm-server
           - openmpi4-gnu12-ohpc # OpenMPI doesn't work with Slurm PMIx
-          #- mpich-ucx-gnu12-ohpc
+          - mpich-ucx-gnu12-ohpc
           - mariadb-server 
           - mariadb-devel
 
@@ -142,7 +143,7 @@
           - ohpc-base-compute
           - ohpc-slurm-client
           - openmpi4-gnu12-ohpc # OpenMPI doesn't work with Slurm PMIx
-            #- mpich-ucx-gnu12-ohpc
+          - mpich-ucx-gnu12-ohpc
 
     #- name: Open all ports in this IP range. Was open the firewall for slurmd port 6818
       ##shell: 'firewall-cmd --add-port=6818/tcp --permanent; firewall-cmd --reload'

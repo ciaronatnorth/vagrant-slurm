@@ -154,7 +154,7 @@ SlurmdLogFile=/var/log/slurmd.log
 {% endset %} 
 NodeName={{ computes }} Sockets={{ compute.sockets }} CoresPerSocket={{ compute.cores_per_socket }} ThreadsPerCore=1 State=UNKNOWN
 PartitionName=standard Nodes=ALL Default=YES MaxTime=INFINITE State=UP
-TaskPlugin=task/affinity
+TaskPlugin=task/affinity,task/cgroup
 PropagateResourceLimitsExcept=MEMLOCK
 JobCompType=jobcomp/filetxt
 #Epilog=/etc/slurm/slurm.epilog.clean

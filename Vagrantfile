@@ -6,10 +6,12 @@ CONTROLLER_CORES_PER_SOCKET=4
 CONTROLLER_CORES=4 # product of sockets and cores_per_socket
 
 COMPUTE_SOCKETS=2
-COMPUTE_CORES_PER_SOCKET=4
-COMPUTE_CORES=8 # product of sockets and cores_per_socket
+COMPUTE_CORES_PER_SOCKET=8
+COMPUTE_CORES=16 # product of sockets and cores_per_socket
 NUMA_DOMAIN_1="0-3"
 NUMA_DOMAIN_2="4-7"
+NUMA_DOMAIN_3="8-11"
+NUMA_DOMAIN_4="12-15"
 
 $script = <<-SCRIPT
     sudo echo "192.168.56.2 controller" | sudo tee -a /etc/hosts
@@ -48,11 +50,13 @@ Vagrant.configure("2") do |config|
       machine.vm.network "private_network", ip: "192.168.56.#{i+3}", hostname: true
       machine.vm.provider :libvirt do |libvirt|
         libvirt.cpus = COMPUTE_CORES
-        libvirt.memory = 1024
+        libvirt.memory = 2048
         libvirt.cputopology :sockets => COMPUTE_SOCKETS, :cores => COMPUTE_CORES_PER_SOCKET, :threads => '1'
         libvirt.numa_nodes = [
           {:cpus => NUMA_DOMAIN_1, :memory => "512"},
-          {:cpus => NUMA_DOMAIN_2, :memory => "512"}
+          {:cpus => NUMA_DOMAIN_2, :memory => "512"},
+          {:cpus => NUMA_DOMAIN_3, :memory => "512"},
+          {:cpus => NUMA_DOMAIN_4, :memory => "512"}
         ]
       end
     end
