@@ -8,3 +8,5 @@ Requires `libvirt` (and optionally `virt-manager`), or Virtualbox (in this case 
 - `vagrant ssh controller` to connect.
 
 - Slurm commands (`sbatch`, `squeue`, `sinfo` etc. should work as expected)
+
+- Uses Slurm `configless` to avoid duplicating `slurm.conf` across nodes.
