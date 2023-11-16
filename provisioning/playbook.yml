@@ -33,6 +33,7 @@
           - hwloc # provides lstopo-no-graphics
           - numactl 
           - perf
+          - strace
 
     - name: uninstall firewalld
       yum:
