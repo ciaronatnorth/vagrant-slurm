@@ -1,6 +1,7 @@
 # vagrant-slurm
 
-Requires `libvirt`, or Virtualbox (in this case you'll need to modify `Vagrantfile`)
+Requires `libvirt` (and optionally `virt-manager`), or Virtualbox (in this case you'll need to modify `Vagrantfile`).
+
 
 - `vagrant up --no-parallel` to start the VMs (`no-parallel` ensures controller is up before computes start)
 
