@@ -129,8 +129,8 @@ SlurmctldDebug=info
 SlurmctldLogFile=/var/log/slurmctld.log
 SlurmdDebug=info
 SlurmdLogFile=/var/log/slurmd.log
-#SlurmSchedLogFile=
-#SlurmSchedLogLevel=
+SlurmSchedLogFile=/var/log/slurmsched.log
+SlurmSchedLogLevel=1
 #DebugFlags=
 #
 #
@@ -158,5 +158,6 @@ TaskPlugin=task/affinity,task/cgroup
 PropagateResourceLimitsExcept=MEMLOCK
 JobCompType=jobcomp/filetxt
 #Epilog=/etc/slurm/slurm.epilog.clean
+SlurmdParameters=numa_node_as_socket
 SlurmctldParameters=enable_configless
 ReturnToService=1 # set to '2' to bring nodes back in *all* cases. See 'man slurm.conf'
